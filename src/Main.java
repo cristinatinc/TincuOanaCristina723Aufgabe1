@@ -1,10 +1,9 @@
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -28,14 +27,18 @@ public class Main {
                     break;
                 }
                 case "1" -> {
+                    System.out.println("Geben Sie einen Wert: ");
+                    Integer wert = scanner.nextInt();
+                    scanner.nextLine();
+                    spieleMitKapGrosWert(spielorte, wert);
                     break;
                 }
                 case "2" -> {
-//                    sortAvengersWithWin(avengers);
+                    spieleNachDatum(spielorte);
                     break;
                 }
                 case "3" -> {
-//                    writeResult(outputFile, avengers);
+                    writeResult("spielanzahl.txt", spielorte);
                     break;
                 }
                 default -> {break;}
@@ -67,4 +70,41 @@ public class Main {
         }
         return spielorte;
     }
+
+    public static void spieleMitKapGrosWert(List<Spielort> spielorte, Integer wert) {
+        spielorte.stream()
+                .filter(spielort -> spielort.getKapazitat()>= wert)
+                .forEach(spielort -> System.out.println(spielort.getTeam1() + " vs " + spielort.getTeam2() + " - Datum " + spielort.getDate() + " -Ort " + spielort.getSpielort()));
+
+    }
+
+    public static void spieleNachDatum(List<Spielort> spielorte) {
+        spielorte.stream()
+                .sorted(Comparator.comparing(Spielort::getDate))
+                .filter(spielort -> spielort.getDate().isAfter(LocalDate.of(2024,06,30)))
+                .forEach(spielort -> System.out.println(spielort.getDate() + " " + spielort.getTeam1() + " vs " + spielort.getTeam2()));
+
+    }
+
+    public static void writeResult(String filename, List<Spielort> people) throws IOException {
+        HashMap<String, Integer> ortSpiele = new HashMap<>();
+        for(Spielort person : people){
+            ortSpiele.put(person.getSpielort(), ortSpiele.getOrDefault(person.getSpielort(), 0) + 1);
+        }
+
+        List<Map.Entry<String, Integer>> ortList = new ArrayList<>(ortSpiele.entrySet());
+        ortList.sort(Comparator.comparing(Map.Entry::getValue));
+
+        ortList = ortList.reversed();
+
+        BufferedWriter writer = Files.newBufferedWriter(Paths.get(filename));
+        for(Map.Entry<String, Integer> entry : ortList){
+            writer.write(entry.getKey() + "%" + entry.getValue());
+            writer.newLine();
+        }
+        writer.close();
+        System.out.println("wrote in file " + filename);
+    }
+
+
 }
